@@ -2,14 +2,11 @@ package ru.scrumtrek.uiserver;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import ru.scrumtrek.uiserver.domain.Line;
+import ru.scrumtrek.uiserver.time.TimeGetterException;
 import ru.scrumtrek.uiserver.time.WorldTimeGetter;
 
-import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -23,23 +20,25 @@ public class Server {
     @Value("${timetype}")
     private String timeType;
 
-    @RequestMapping(method = RequestMethod.GET, path = {"/lines"})
+    @GetMapping(path = {"/lines"})
     public List<Line> getLines() {
         return lines;
     }
 
-    @RequestMapping(method = RequestMethod.POST, path = {"/lines"})
+    @PostMapping(path = {"/lines"})
     public ResponseEntity<Void> setLines(@RequestBody String line) {
         if (lines.stream().anyMatch(l -> l.getLineChars().equals(line)))
             return ResponseEntity.badRequest().build();
+        String time;
         try {
-            lines.add(new Line(idInt.incrementAndGet(), line, wtg.getTime(timeType)));
-        } catch (IOException e) {
+            time = wtg.getTime(timeType);
+        } catch (TimeGetterException e) {
             return ResponseEntity.badRequest().build();
         }
+        lines.add(new Line(idInt.incrementAndGet(), line, time));
         return ResponseEntity.ok().build();
     }
 
-    @RequestMapping(method = RequestMethod.DELETE, path = {"/lines"})
+    @DeleteMapping(path = {"/lines"})
     public void removeAll() { lines.clear(); }
 }
