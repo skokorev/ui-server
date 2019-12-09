@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.scrumtrek.uiserver.domain.Line;
+import ru.scrumtrek.uiserver.time.LocalTimeGetter;
 import ru.scrumtrek.uiserver.time.TimeGetter;
 import ru.scrumtrek.uiserver.time.TimeGetterException;
 import ru.scrumtrek.uiserver.time.TimeType;
@@ -18,6 +19,7 @@ public class Server {
     private AtomicInteger idInt = new AtomicInteger(0);
     private List<Line> lines = new LinkedList<>();
     @Autowired private TimeGetter timeGetter;
+    private LocalTimeGetter localTimeGetter = new LocalTimeGetter();
 
     @Value("${timetype}")
     private String timeType;
@@ -35,7 +37,11 @@ public class Server {
         try {
             time = timeGetter.getTime(TimeType.ofRepresentation(timeType));
         } catch (TimeGetterException e) {
-            return ResponseEntity.badRequest().build();
+            try {
+                time = localTimeGetter.getTime(TimeType.ofRepresentation(timeType));
+            } catch (TimeGetterException e1) {
+                return ResponseEntity.badRequest().build();
+            }
         }
         lines.add(new Line(idInt.incrementAndGet(), line, time));
         return ResponseEntity.ok().build();
