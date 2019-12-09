@@ -17,7 +17,7 @@ public class UrlConnectionWebJsonGetter implements WebJsonGetter {
 
     @Override
     public JsonNode getJsonContents(String url) throws IOException {
-        HttpURLConnection conn = (HttpURLConnection) new URL(url).openConnection();
+        HttpURLConnection conn = createConnection(url);
         conn.setRequestMethod("GET");
         int responseCode = conn.getResponseCode();
         if (200 != responseCode) throw HttpClientErrorException.create(HttpStatus.BAD_REQUEST,
@@ -27,5 +27,9 @@ public class UrlConnectionWebJsonGetter implements WebJsonGetter {
                 StandardCharsets.UTF_8);
         byte[] contents = IOUtils.toByteArray(conn.getInputStream());
         return mapper.readTree(contents);
+    }
+
+    protected HttpURLConnection createConnection(String url) throws IOException {
+        return (HttpURLConnection) new URL(url).openConnection();
     }
 }
