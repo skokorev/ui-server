@@ -2,6 +2,8 @@ package ru.scrumtrek.uiserver.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import ru.scrumtrek.uiserver.time.SafeTimeGetter;
+import ru.scrumtrek.uiserver.time.SafeTimeGetterImpl;
 import ru.scrumtrek.uiserver.time.TimeGetter;
 import ru.scrumtrek.uiserver.time.WorldTimeGetter;
 import ru.scrumtrek.uiserver.webclient.UrlConnectionWebJsonGetter;
@@ -17,5 +19,10 @@ public class BeansConfig {
     @Bean
     public TimeGetter timeGetter() {
         return new WorldTimeGetter();
+    }
+
+    @Bean
+    public SafeTimeGetter safeTimeGetter() {
+        return new SafeTimeGetterImpl();
     }
 }

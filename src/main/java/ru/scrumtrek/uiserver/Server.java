@@ -5,10 +5,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.scrumtrek.uiserver.domain.Line;
-import ru.scrumtrek.uiserver.time.LocalTimeGetter;
-import ru.scrumtrek.uiserver.time.TimeGetter;
-import ru.scrumtrek.uiserver.time.TimeGetterException;
-import ru.scrumtrek.uiserver.time.TimeType;
+import ru.scrumtrek.uiserver.time.*;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -18,8 +15,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class Server {
     private AtomicInteger idInt = new AtomicInteger(0);
     private List<Line> lines = new LinkedList<>();
-    @Autowired private TimeGetter timeGetter;
-    private LocalTimeGetter localTimeGetter = new LocalTimeGetter();
+    @Autowired private SafeTimeGetter safeTimeGetter;
 
     @Value("${timetype}")
     private String timeType;
@@ -33,16 +29,7 @@ public class Server {
     public ResponseEntity<Void> setLines(@RequestBody String line) {
         if (lines.stream().anyMatch(l -> l.getLineChars().equals(line)))
             return ResponseEntity.badRequest().build();
-        String time;
-        try {
-            time = timeGetter.getTime(TimeType.ofRepresentation(timeType));
-        } catch (TimeGetterException e) {
-            try {
-                time = localTimeGetter.getTime(TimeType.ofRepresentation(timeType));
-            } catch (TimeGetterException e1) {
-                return ResponseEntity.badRequest().build();
-            }
-        }
+        String time = safeTimeGetter.getTime(TimeType.ofRepresentation(timeType));
         lines.add(new Line(idInt.incrementAndGet(), line, time));
         return ResponseEntity.ok().build();
     }
