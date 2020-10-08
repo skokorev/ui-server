@@ -43,6 +43,10 @@
         </dependency>
     </dependencies>
 
+    <scm>
+        <connection>scm:git:https://github.com/skokorev/ui-server.git</connection>
+    </scm>
+
     <build>
         <finalName>app</finalName>
         <plugins>
